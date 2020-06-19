@@ -351,7 +351,28 @@ regardless of -timeout setting.
 ```
 
 ## 常用的测试命令
-
+### 1.指定测试二进制程序名编译，并不执行
+	go test -c -o $obj
+### 	2.执行测试二进制程序,-test.v查看详细输出 -test.run指定执行的测试函数
+	./$obj -test.v -test.run xxx
+### 	3.执行基准测试
+	go test -v -bench . 
+### 	4.执行指定次数
+	go test -v -bench . -count 2
+### 	5.执行指定cpu核数
+	go test -v -bench . -cpu 1,2,4
+### 	6.基准测试时打印内存占比
+	go test -v -bench . -benchmem
+### 	7.生成cpu、mem、协程阻塞性能分析文件
+	go test -bench . -v -memprofile  mem.out -blockprofile block.out -cpuprofile cpu.out -count 2 -benchmem
+### 	8.通过go tool pprof查看
+	go tool pprof mem.out 
+### 	输入web以浏览器方式查看、输入pdf，导出pdf版本
+### 	9.导出代码覆盖率
+	go test -v -coverprofile cover.out
+###  导出成html
+	go tool cover -html=cover.out -o cover.html
+## 常用测试选项
 ``` shell
 	关于 flags for test binary ，调用go help testflag，这些是go test过程中经常使用到的参数
 	-test.v : 是否输出全部的单元测试用例（不管成功或者失败），默认没有加上，所以只输出失败的单元测试用例。
@@ -363,28 +384,6 @@ regardless of -timeout setting.
 	-test.memprofile mem.out : 是否输出内存性能分析文件
 	-test.blockprofile block.out : 是否输出内部goroutine阻塞的性能分析文件
 	-test.coverprofile  cover.out : 收集代码覆盖率
-	
-	指定测试二进制程序名编译，并不执行
-	1.go test -c -o $obj
-	执行测试二进制程序,-test.v查看详细输出 -test.run指定执行的测试函数
-	2../$obj -test.v -test.run xxx
-	执行基准测试
-	3.go test -v -bench . 
-	执行指定次数
-	4.go test -v -bench . -count 2
-	执行指定cpu核数
-	5.go test -v -bench . -cpu 1,2,4
-	基准测试时打印内存占比
-	6.go test -v -bench . -benchmem
-	生成cpu、mem、协程阻塞性能分析文件
-	7.go test -bench . -v -memprofile  mem.out -blockprofile block.out -cpuprofile cpu.out -count 2 -benchmem
-	通过go tool pprof查看
-	8.go tool pprof mem.out 
-	输入web以浏览器方式查看、输入pdf，导出pdf版本
-	9.导出代码覆盖率
-	go test -v -coverprofile cover.out
-	导出成html
-	go tool cover -html=cover.out -o cover.html
 ```
 **代码覆盖率样图**
 ![代码覆盖图片](https://github.com/jaydenwen123/technolgy_examples/raw/master/go_test/cover.jpg)
@@ -404,4 +403,5 @@ regardless of -timeout setting.
 8. [搞定Go单元测试（三）—— 断言（testify）](https://juejin.im/post/5ce935a1e51d4510aa01147b)
 9. [搞定Go单元测试（四）—— 依赖注入框架(wire)](https://juejin.im/post/5ce935dcf265da1ba431c998)
 10. [go test 及测试覆盖率【 Go 夜读 】](https://www.bilibili.com/video/BV15b411z74v)
+11. [Golang Testing单元测试指南](https://www.cnblogs.com/sunsky303/p/11818480.html)
 
