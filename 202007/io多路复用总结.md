@@ -23,7 +23,7 @@ IO的操作既包括本地IO读写，也包括远程IO（socket）的读写。IO
 
 ![io多路复用](https://segmentfault.com/img/bVm1c5)
 
-**IO多路复用:**IO多路复用和上述前两种io模式的区别在于：IO多路复用主要用来解决应用程序处理多个IO，主要的IO多路复用有select、poll、epoll。后文将详细介绍select、poll和epoll之间的关系和区别。**其IO多路复用也是数据同步非阻塞IO的范畴，只不过它解决的问题是应用程序同时处理多个IO而已**
+**IO多路复用:IO多路复用和上述前两种io模式的区别在于：IO多路复用主要用来解决应用程序处理多个IO，主要的IO多路复用有select、poll、epoll。后文将详细介绍select、poll和epoll之间的关系和区别。**其IO多路复用也是数据同步非阻塞IO的范畴，只不过它解决的问题是应用程序同时处理多个IO而已
 
 ----
 
