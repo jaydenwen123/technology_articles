@@ -370,8 +370,117 @@ regardless of -timeout setting.
 ### 	输入web以浏览器方式查看、输入pdf，导出pdf版本
 ### 	9.导出代码覆盖率
 	go test -v -coverprofile cover.out
-###  导出成html
+###  10.代码覆盖率导出成html
 	go tool cover -html=cover.out -o cover.html
+	
+### 11.使用flag var传递
+	
+**程序编写**
+
+```go
+var flag1 string
+
+var flag2 int
+
+func init() {
+	flag.StringVar(&flag1,"var1","hello","enter var1")
+	flag.IntVar(&flag2,"var2",3,"enter var2")
+}
+
+func TestFlag(t *testing.T){
+	t.Logf("flag1:%v",flag1)
+	t.Logf("flag2:%v",flag2)
+}
+
+
+```
+
+**通过-h查看帮助**
+
+```shell
+./go_test.test -h
+false
+Usage of ./go_test.test:
+ 	-var1 string
+        enter var1 (default "hello")
+  -var2 int
+        enter var2 (default 3)
+  -hello string
+        hello need input (default "123")
+  -test.bench regexp
+        run only benchmarks matching regexp
+  -test.benchmem
+        print memory allocations for benchmarks
+  -test.benchtime d
+        run each benchmark for duration d (default 1s)
+  -test.blockprofile file
+        write a goroutine blocking profile to file
+  -test.blockprofilerate rate
+        set blocking profile rate (see runtime.SetBlockProfileRate) (default 1)
+  -test.timeout d
+        panic test binary after duration d (default 0, timeout disabled)
+  -test.trace file
+        write an execution trace to file
+  -test.v
+        verbose: print additional output
+ 
+```
+
+**程序运行传递参数**  
+
+```shell
+go test -c && ./go_test.test -test.v -test.run TestFlag -var1 hellowrold -var2 234
+false
+=== RUN   TestFlag
+--- PASS: TestFlag (0.00s)
+    flag_test.go:18: flag1:hellowrold
+    flag_test.go:19: flag2:234
+PASS
+```
+
+### 12.使用flag.Args -args参数
+
+```shell
+
+指示go test把-args后面的参数带到测试中去。具体的测试函数会跟据此参数来控制测试流程。
+
+-args后面可以附带多个参数，所有参数都将以字符串形式传入，每个参数做为一个string，并存放到字符串切片中。
+
+// TestArgs 用于演示如何解析-args参数
+func TestArgs(t *testing.T) {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
+	argList := flag.Args() // flag.Args() 返回 -args 后面的所有参数，以切片表示，每个元素代表一个参数
+	t.Log("argList:",argList)
+	for _, arg := range argList {
+		if arg == "cloud" {
+			t.Log("Running in cloud.")
+		}else {
+			t.Log("Running in other mode.")
+		}
+	}
+}
+```
+
+**如下执行**
+
+```shell
+
+go test -c && ./go_test.test -test.v -test.run TestArgs  "12312" "12313"
+false
+=== RUN   TestArgs
+--- PASS: TestArgs (0.00s)
+    flag_test.go:30: argList: [12312 12313]
+    flag_test.go:35: Running in other mode.
+    flag_test.go:35: Running in other mode.
+PASS
+
+
+```
+
+
 ## 常用测试选项
 ``` shell
 	关于 flags for test binary ，调用go help testflag，这些是go test过程中经常使用到的参数
