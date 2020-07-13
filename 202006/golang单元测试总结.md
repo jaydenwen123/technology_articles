@@ -464,7 +464,7 @@ func TestArgs(t *testing.T) {
 }
 ```
 
-**如下执行**
+**方式一、编译二进制然后执行**
 
 ```shell
 
@@ -476,6 +476,26 @@ false
     flag_test.go:35: Running in other mode.
     flag_test.go:35: Running in other mode.
 PASS
+
+
+```
+
+
+**方式二：直接执行run**
+
+**直接run时，需要通过-args指定参数**
+
+```shell
+
+go test -v -run TestArgs -args 123 12313
+false
+=== RUN   TestArgs
+--- PASS: TestArgs (0.00s)
+    flag_test.go:30: argList: [123 12313]
+    flag_test.go:35: Running in other mode.
+    flag_test.go:35: Running in other mode.
+PASS
+ok      github.com/jaydenwen123/technolgy_examples/go_test      0.007s
 
 
 ```
