@@ -237,26 +237,26 @@ sentinel current-epoch 0
 ### 4.1 master发生故障时，自动转移故障步骤
 
 1. **master主观下线**  
-	2. 当sentinel超过指定的down-after-milliseconds后，则判定为该master主管下线
-	3. 然后开始发送sentinel is-master-down-by-addr 命令询问其他的sentinel节点，是否master已经下线
-2. **master客观下线**  
-	3. 当sentinel收到其他sentinel节点的is-master-down-by-addr的回复后，进行统计，如果有超过quorm个sentinel任务master下线，则此时会判定该master客观下线	
-3. **选举sentinel领导者**
-	4.  当master客观下线后，需要从sentinel集群中选择一个sentinel领导者节点，用来完成后面的故障转移操作。选举操作如下
-		5. 发送sentinel is-master-down-by-addr 命令开始发起投票，希望其他sentinel选举自己为领导者
-		6. 收到命令的sentinel如果没有同意其他的sentinel为领导者，那么将统一该请求
-		7. 如果当前的sentinel发现自己的票数已经达到了sentinel集群的半数以上，则它将成为领导者
-		8. 如果此过程有多个sentinel都成为领导者，则等待一段时间后将继续选举
-4. **选举新的master节点**  
+	2. 当sentinel超过指定的down-after-milliseconds后，则判定为该master主管下线  
+	3. 然后开始发送sentinel is-master-down-by-addr 命令询问其他的sentinel节点，是否master已经下线  
+2. **master客观下线**    
+	3. 当sentinel收到其他sentinel节点的is-master-down-by-addr的回复后，进行统计，如果有超过quorm个sentinel任务master下线，则此时会判定该master客观下线   	
+3. **选举sentinel领导者**  
+	4.  当master客观下线后，需要从sentinel集群中选择一个sentinel领导者节点，用来完成后面的故障转移操作。选举操作如下   
+		5. 发送sentinel is-master-down-by-addr 命令开始发起投票，希望其他sentinel选举自己为领导者  
+		6. 收到命令的sentinel如果没有同意其他的sentinel为领导者，那么将同意该请求  
+		7. 如果当前的sentinel发现自己的票数已经达到了sentinel集群的半数以上，则它将成为领导者  
+		8. 如果此过程有多个sentinel都成为领导者，则等待一段时间后将继续选举  
+4. **选举新的master节点**    
 	5. sentinel领导者将从多个slave中选择一个节点为新的master节点，选举逻辑如下
-		6.  首先根据配置文件中配置的slave-priority属性优先级来选择，如果存在优先级最高的返回，否则继续选择
-		7.  选择复制的偏移量最大的slave节点(复制最完整)，如果存在则返回，否则继续
-		8.  前两步都没有选出来新的master的话，则选择runId最小的节点(启动最早的节点)作为master节点
-5. **故障转移**  
-	6. 故障转移的步骤
-		7.  首选将新选择的master节点执行slaveof no one，让其恢复为master节点
-		8.  对其他的slave节点执行slaveof newMasterIp newMasterPort，让其成为新的master节点的slave节点
-		9. 更新原来的master节点为slave，并保持着对其关注，当其恢复后命令它去复制新的master节点。  
+		6.  首先根据配置文件中配置的slave-priority属性优先级来选择，如果存在优先级最高的返回，否则继续选择  
+		7.  选择复制的偏移量最大的slave节点(复制最完整)，如果存在则返回，否则继续  
+		8.  前两步都没有选出来新的master的话，则选择runId最小的节点(启动最早的节点)作为master节点  
+5. **故障转移**    
+	6. 故障转移的步骤  
+		7.  首选将新选择的master节点执行slaveof no one，让其恢复为master节点  
+		8.  对其他的slave节点执行slaveof newMasterIp newMasterPort，让其成为新的master节点的slave节点  
+		9. 更新原来的master节点为slave，并保持着对其关注，当其恢复后命令它去复制新的master节点。    
 
 
 ## 5. 三个定时任务
