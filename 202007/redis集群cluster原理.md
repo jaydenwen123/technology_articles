@@ -321,6 +321,69 @@ M: f9ef5a698f81aa9042442ee9cc66ec1221bc5e85 127.0.0.1:8001
 
 **集群扩容的本质:** 将部分的hash槽移动到新加入的节点上
 
+### 5.1 新增节点
+
+**新启动两个redis server**
+
+```shell
+8006为主节点，8007为该节点的从节点
+./redis-server ../config/redis-8006.conf
+./redis-server ../config/redis-8007.conf
+./redis-cli --cluster help
+
+```
+
+**将节点加入到集群中**
+
+```shell
+./redis-cli --cluster add-node
+
+  add-node       new_host:new_port existing_host:existing_port
+                 --cluster-slave
+                 --cluster-master-id <arg>
+
+```
+
+```shell
+
+ ./redis-cli --cluster add-node 127.0.0.1:8006 127.0.0.1:8000
+ ./redis-cli -p 8000 cluster nodes
+ 
+ /redis-cli --cluster add-node 127.0.0.1:8007 127.0.0.1:8000 --cluster-slave --cluster-master-id 021c1fc0a770edbcb676ac1bf0f6a0ac84695133
+ 
+```
+
+**为节点分配槽**
+
+```shell
+./redis-cli --cluster reshard 
+
+
+  reshard        host:port
+                 --cluster-from <arg>
+                 --cluster-to <arg>
+                 --cluster-slots <arg>
+                 --cluster-yes
+                 --cluster-timeout <arg>
+                 --cluster-pipeline <arg>
+                 --cluster-replace
+```
+
+```shell
+
+ ./redis-cli -p 8000 cluster slots
+ ./redis-cli --cluster reshard 127.0.0.1:8006 --cluster-from 127.0.0.1:8000 --cluster-to 127.0.0.1:8006 --cluster-slots 1365
+ ./redis-cli --cluster reshard 127.0.0.1:8006 --cluster-from c732f89c7f380b9fdb6cbf30dca3370d96cb89f6  --cluster-to  021c1fc0a770edbcb676ac1bf0f6a0ac84695133  --cluster-slots 1365
+ ll
+ ./redis-cli -p 8000 cluster slots
+ ./redis-cli --cluster reshard 127.0.0.1:8006 --cluster-from 9a68a9f9f3b436466a123f36f9d6673b5ed9627e  --cluster-to  021c1fc0a770edbcb676ac1bf0f6a0ac84695133  --cluster-slots 1365
+ ./redis-cli -p 8000 cluster slots
+ ./redis-cli --cluster reshard 127.0.0.1:8006 --cluster-from f9ef5a698f81aa9042442ee9cc66ec1221bc5e85  --cluster-to  021c1fc0a770edbcb676ac1bf0f6a0ac84695133  --cluster-slots 1365
+ ./redis-cli -p 8000 cluster slots
+ ./redis-cli -p 8000 cluster nodes
+ 
+```
+
 
 ## 6. redis集群缩容
 
@@ -332,6 +395,63 @@ M: f9ef5a698f81aa9042442ee9cc66ec1221bc5e85 127.0.0.1:8001
 2. 忘记节点
 3. 关闭节点
 
+**迁移槽**
+
+```shell
+./redis-cli -p 8000 cluster nodes
+
+/redis-cli --cluster reshard 127.0.0.1:8000  --cluster-from 021c1fc0a770edbcb676ac1bf0f6a0ac84695133 --cluster-to c732f89c7f380b9fdb6cbf30dca3370d96cb89f6 --cluster-slots 1365
+
+./redis-cli -p 8000 cluster nodes
+
+./redis-cli --cluster reshard 127.0.0.1:8000  --cluster-from 021c1fc0a770edbcb676ac1bf0f6a0ac84695133 --cluster-to f9ef5a698f81aa9042442ee9cc66ec1221bc5e85 --cluster-slots 1365
+
+./redis-cli -p 8000 cluster nodes
+
+./redis-cli --cluster reshard 127.0.0.1:8000  --cluster-from 021c1fc0a770edbcb676ac1bf0f6a0ac84695133 --cluster-to 9a68a9f9f3b436466a123f36f9d6673b5ed9627e --cluster-slots 1365
+```
+
+**下线节点**
+
+```shell
+./redis-cli --cluster del-node 
+
+	del-node       host:port node_id
+```
+
+```shell
+#先下线slave节点
+➜  ~/learn-redis/bin ./redis-cli --cluster del-node  127.0.0.1:8000  cd16702f978426ddc9fe22025e4e91e75b1d1152
+>>> Removing node cd16702f978426ddc9fe22025e4e91e75b1d1152 from cluster 127.0.0.1:8000
+>>> Sending CLUSTER FORGET messages to the cluster...
+>>> Sending CLUSTER RESET SOFT to the deleted node.
+
+#再下线master节点
+➜  ~/learn-redis/bin ./redis-cl --cluster del-node 127.0.0.1:8000
+➜  ~/learn-redis/bin ./redis-cli -p 8000 cluster nodes
+9a68a9f9f3b436466a123f36f9d6673b5ed9627e 127.0.0.1:8002@18002 master - 0 1595756991464 10 connected 10923-16383
+c2c85370985f43371d9c7c45997b8a72ad4c25f1 127.0.0.1:8004@18004 slave c732f89c7f380b9fdb6cbf30dca3370d96cb89f6 0 1595756989000 8 connected
+021c1fc0a770edbcb676ac1bf0f6a0ac84695133 127.0.0.1:8006@18006 master - 0 1595756990457 7 connected
+3d7581e96312bc71e369789f0c4b48f7b33669bf 127.0.0.1:8005@18005 slave f9ef5a698f81aa9042442ee9cc66ec1221bc5e85 0 1595756989446 9 connected
+cd16702f978426ddc9fe22025e4e91e75b1d1152 127.0.0.1:8007@18007 slave 9a68a9f9f3b436466a123f36f9d6673b5ed9627e 0 1595756990000 10 connected
+e0e23fc55ce916c207bd2ace6fb27d333db59e32 127.0.0.1:8003@18003 slave 9a68a9f9f3b436466a123f36f9d6673b5ed9627e 0 1595756987431 10 connected
+c732f89c7f380b9fdb6cbf30dca3370d96cb89f6 127.0.0.1:8000@18000 myself,master - 0 1595756987000 8 connected 0-5460
+f9ef5a698f81aa9042442ee9cc66ec1221bc5e85 127.0.0.1:8001@18001 master - 0 1595756989000 9 connected 5461-10922
+
+➜  ~/learn-redis/bin ./redis-cli --cluster del-node cd16702f978426ddc9fe22025e4e91e75b1d1152
+[ERR] Wrong number of arguments for specified --cluster sub command
+➜  ~/learn-redis/bin
+➜  ~/learn-redis/bin
+➜  ~/learn-redis/bin
+➜  ~/learn-redis/bin ./redis-cli --cluster 127.0.0.1:8000  del-node cd16702f978426ddc9fe22025e4e91e75b1d1152
+Unknown --cluster subcommand
+
+➜  ~/learn-redis/bin ./redis-cli --cluster del-node  127.0.0.1:8000  021c1fc0a770edbcb676ac1bf0f6a0ac84695133
+>>> Removing node 021c1fc0a770edbcb676ac1bf0f6a0ac84695133 from cluster 127.0.0.1:8000
+>>> Sending CLUSTER FORGET messages to the cluster...
+>>> Sending CLUSTER RESET SOFT to the deleted node.
+➜  ~/learn-redis/bin
+```
 
 ## 7. redis集群故障转移
 
