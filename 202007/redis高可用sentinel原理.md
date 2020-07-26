@@ -255,7 +255,7 @@ sentinel current-epoch 0
 5. **故障转移**    
 	6. 故障转移的步骤  
 		7.  首选将新选择的master节点执行slaveof no one，让其恢复为master节点  
-		8.  对其他的slave节点执行slaveof newMasterIp newMasterPort，让其成为新的master节点的slave节点  
+		8.  对其他的slave节	点执行slaveof newMasterIp newMasterPort，让其成为新的master节点的slave节点  
 		9. 更新原来的master节点为slave，并保持着对其关注，当其恢复后命令它去复制新的master节点。    
 
 
