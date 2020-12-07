@@ -33,7 +33,7 @@
 
 ## 总览
 
-![gc总体框架图](./imgs/golang\ GC.jpg)
+![gc总体框架图](imgs/golang%20GC.jpg)
 
 
 ## 1.垃圾回收是什么？
