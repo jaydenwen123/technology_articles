@@ -2,6 +2,8 @@
 
 ## 1. vue 初始化项目时，通常采用下列命令初始化
 
+
+
 ```shell
 vue init hello
 ```
