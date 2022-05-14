@@ -23,10 +23,12 @@
 
 下面将以3个redis节点的集群：(3个节点，每个节点一个副本)来搭建实验环境，规定7000、7001、7002为主节点，7003、7004、7005依次为上述节点的副本节点。
 
-###3.1 redis 集群安装步骤
+###3.1 redis 集群安装步骤  
+
 ![rediscluster安装步骤.png](rediscluster安装步骤.png)
 
-###3.2 redis cluster指派哈希槽
+###3.2 redis cluster指派哈希槽  
+
 ![redis cluster指派曹.png](redis cluster指派曹.png)
 
 ###3.3 redis cluster配置文件
